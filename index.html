@@ -1063,18 +1063,6 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
         </div>
     </div>
 </div>
-<div class="modal-overlay" id="modal-update-roletas">
-    <div class="modal-content" style="text-align: center; max-width: 450px;">
-        <h2 style="color: var(--ts4-blue); margin-top: 0;">🔄 Nova Versão Detectada!</h2>
-        <p style="font-size: 14px; color: #555;">O SimStoria foi atualizado e novas opções foram adicionadas às roletas-base do sistema!</p>
-        <p style="font-size: 13px; color: #ff4d4d; font-weight: bold;">Deseja atualizar suas roletas para receber as novidades?</p>
-        <p style="font-size: 11px; color: #888; line-height: 1.5;">(Atenção: Ao clicar em 'Sim', as roletas padrão serão substituídas. Se você adicionou itens manualmente nelas, eles serão perdidos. Suas roletas totalmente customizadas e dados da família <strong>não</strong> serão afetados).</p>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="btn-main" style="background: var(--ts4-green); margin:0;" onclick="aceitarAtualizacaoRoletas()">✅ Sim, Atualizar Roletas</button>
-            <button class="btn-main btn-sec" style="margin:0;" onclick="recusarAtualizacaoRoletas()">❌ Não, Manter as Minhas</button>
-        </div>
-    </div>
-</div>
     <div id="toast">✓ Sucesso!</div>
 
     <script>
@@ -1342,7 +1330,6 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                         localStorage.setItem('ts4_current_family_id', id); localStorage.setItem('ts4_current_family_name', currentFamilyName);
                         hasUnsavedChanges = false;
                         salvarTudo(); recarregarInterface(); showToast("✅ Família Carregada!");
-			verificarAtualizacao();
                     }
                 } else alert("Falha ao baixar do Google Drive.");
             } catch(e) { console.error(e); alert("Erro ao carregar a família. Verifique a conexão."); }
@@ -1453,36 +1440,6 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                 verificarSessaoDrive();
             }
 	}
-// ==========================================
-// FUNÇÕES DE ATUALIZAÇÃO DE VERSÃO (ROLETAS)
-// ==========================================
-const APP_VERSION = "v48"; // Mude isso no futuro para v49, v50... para acionar novos pop-ups
-
-function verificarAtualizacao() {
-    if (!db.app_version) db.app_version = "v47"; // Padrão para saves antigos
-    if (db.app_version !== APP_VERSION) {
-        document.getElementById('modal-update-roletas').style.display = 'flex';
-    }
-}
-
-function aceitarAtualizacaoRoletas() {
-    // Sobrescreve apenas as roletas padrão com as novidades
-    DEFAULT_ROULETTES.forEach(key => {
-        db.config[key] = [...DEFAULT_CONFIG_WHEELS[key]]; 
-    });
-    db.app_version = APP_VERSION;
-    salvarTudo();
-    recarregarInterface();
-    document.getElementById('modal-update-roletas').style.display = 'none';
-    showToast("Roletas atualizadas com sucesso!");
-}
-
-function recusarAtualizacaoRoletas() {
-    db.app_version = APP_VERSION; // Salva a versão para não perguntar de novo no próximo login
-    salvarTudo();
-    document.getElementById('modal-update-roletas').style.display = 'none';
-}
-
 // ==========================================
 // GERENCIAMENTO AVANÇADO DE ÁLBUNS
 // ==========================================
@@ -2457,7 +2414,6 @@ async function excluirAlbumAtual() {
                     renderGenList();
                     renderIaSimList();
                     showToast("✅ Backup importado com sucesso!");
-		    verificarAtualizacao();
                 } catch(err) {
                     alert("❌ Erro ao ler o arquivo: " + err.message);
                 }
@@ -3611,7 +3567,6 @@ async function deletarFotoPrincipal(idFoto) {
 
         window.onload = function() {
             iniciarDB();
-	    verificarAtualizacao(); 
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') fecharLightbox();
            });
