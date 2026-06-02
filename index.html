@@ -357,9 +357,12 @@
 
         <div id="tab-history" class="tab-pane">
             <div class="panel">
-                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap: wrap;">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap: wrap; gap:8px;">
                     <h2 style="margin:0;">📖 O Livro da Família</h2>
-                    <button class="btn-main" style="width:auto; margin:0; padding:10px 20px; background:var(--ts4-green);" onclick="exportarHistoria()">📥 Exportar Lore (TXT)</button>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-main" style="width:auto; margin:0; padding:10px 18px; background:linear-gradient(135deg, #1a1a2e, #16213e); font-size:13px; letter-spacing:0.5px;" onclick="abrirApresentacao()">🎬 Modo Apresentação</button>
+                        <button class="btn-main" style="width:auto; margin:0; padding:10px 20px; background:var(--ts4-green);" onclick="exportarHistoria()">📥 Exportar Lore (TXT)</button>
+                    </div>
                 </div>
                 
                 <div style="display:flex; gap:10px; margin-bottom:5px; flex-wrap:wrap; align-items:center;">
@@ -1401,6 +1404,48 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                 showToast("✅ Arquivo ZIP gerado!");
                 hasUnsavedChanges = false;
             });
+        }
+
+        function reiniciarConfiguracoes() {
+            if (!confirm("⚠️ ATENÇÃO: Isso apagará TODOS os dados da sessão atual:\n\n• Sims e árvore genealógica\n• Histórico e livro da família\n• Roletas customizadas\n• Configurações e I.A.\n• Galeria salva no navegador\n\nEsta ação é IRREVERSÍVEL. Deseja continuar?")) return;
+
+            // Limpa todas as chaves do app no localStorage
+            const keysToRemove = [
+                'ts4_companion_data',
+                'ts4_visited',
+                'ts4_allow_local_save',
+                'ts4_current_family_id',
+                'ts4_current_family_name',
+                'ts4_anthropic_key',
+                'ts4_openai_key',
+                'ts4_gemini_key'
+            ];
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // Remove fotos legadas da galeria (chaves dinâmicas ts4_galeria_midia_*)
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('ts4_galeria_midia_'))
+                .forEach(k => localStorage.removeItem(k));
+
+            // Reseta variáveis globais de sessão
+            db = {
+                sims: [],
+                historia: "",
+                regras: "",
+                metas_pendentes: [],
+                config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)),
+                custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] },
+                reactionAudio: AUDIO_DEFAULTS,
+                galeria: { albuns: [], fotos: [] }
+            };
+            currentCloudFileId = null;
+            currentFamilyName = "Família Padrão";
+            allowLocalSave = false;
+            hasUnsavedChanges = false;
+            document.getElementById('chk-local-save').checked = false;
+
+            recarregarInterface();
+            showToast("✅ Todos os dados foram apagados com sucesso!");
         }
 
         function recarregarInterface() {
@@ -2839,175 +2884,6 @@ async function excluirAlbumAtual() {
             renderRelPassadasEdit();
         }
 
-        function exportarPerfilSim(simId) {
-            let s = db.sims.find(x => String(x.id) === String(simId));
-            if (!s) return alert("Sim não encontrado.");
-
-            const getNome = (fid) => db.sims.find(x => String(x.id) === String(fid))?.nome || "—";
-            let filhos = db.sims.filter(x => String(x.p1) === String(s.id) || String(x.p2) === String(s.id));
-
-            let textoGeral = ((s.tracos || "") + " " + (s.extra || "")).toLowerCase();
-            let isVamp = textoGeral.includes('vampir');
-            let isSpell = textoGeral.includes('brux') || textoGeral.includes('feiticeir') || textoGeral.includes('mágic');
-            let isMermaid = textoGeral.includes('serei') || textoGeral.includes('tritão') || textoGeral.includes('oceano');
-            let isAlien = textoGeral.includes('alien') || textoGeral.includes('extraterrestre');
-            let isWolf = textoGeral.includes('lobisomem') || textoGeral.includes('lua');
-            
-            let bgGrad = { c1: '#0079C1', c2: '#7CD700', text: '#0079C1', tagBg: '#e4ebf5', tagText: '#0079C1', icon: '👤', occult: 'Sim Humano' };
-            if (isVamp) bgGrad = { c1: '#2b0000', c2: '#7a1022', text: '#8b0000', tagBg: '#f5e4e6', tagText: '#8b0000', icon: '🦇', occult: 'Vampiro(a)' };
-            else if (isSpell) bgGrad = { c1: '#31124b', c2: '#6a0dad', text: '#6a0dad', tagBg: '#ece4f5', tagText: '#6a0dad', icon: '🔮', occult: 'Feiticeiro(a)' };
-            else if (isMermaid) bgGrad = { c1: '#0077b6', c2: '#00b4d8', text: '#0077b6', tagBg: '#e4f3f5', tagText: '#0077b6', icon: '🧜‍♀️', occult: 'Sereia/Tritão' };
-            else if (isAlien) bgGrad = { c1: '#000000', c2: '#1a5e20', text: '#2e7d32', tagBg: '#e4f5e7', tagText: '#2e7d32', icon: '👽', occult: 'Alienígena' };
-            else if (isWolf) bgGrad = { c1: '#3e2723', c2: '#795548', text: '#5d4037', tagBg: '#f5efe4', tagText: '#5d4037', icon: '🐺', occult: 'Lobisomem' };
-            
-            if (s.status === 'Ancestral (Morto)') {
-                bgGrad = { c1: '#2c3e50', c2: '#4ca1af', text: '#34495e', tagBg: '#eaeced', tagText: '#34495e', icon: '🪦', occult: 'Espírito Ancestral' };
-            }
-
-            let tracosArr = s.tracos ? s.tracos.split(',').map(t=>t.trim()).filter(Boolean) : [];
-            let destqueTraco = tracosArr.length > 0 ? tracosArr[0].toLowerCase() : "temperamento misterioso";
-            let relText = s.relStatus === 'casado' ? "Compartilha a vida com seu amor" : 
-                          s.relStatus === 'separado' ? "Carrega as marcas de uma separação" : 
-                          s.relStatus === 'viuvo' ? "Guarda o luto por um amor que partiu" : "Segue uma jornada independente";
-            
-            let aspiracao = "deixar sua marca no legado familiar";
-            if (s.extra && s.extra.trim().length > 3) {
-                aspiracao = s.extra.split('.')[0].toLowerCase().trim();
-                if (aspiracao.length > 60) aspiracao = aspiracao.substring(0, 57) + "...";
-            }
-            
-            let narrativaText = `Em sua fase de ${s.fase || 'jovem adulto'}, ${s.nome} carrega a essência de um(a) ${bgGrad.occult}. Conhecido(a) por ser ${destqueTraco}, busca ${aspiracao}. ${relText}.`;
-
-            const W = 700, H = 420;
-            const canvas = document.createElement('canvas');
-            canvas.width = W; canvas.height = H;
-            const ctx = canvas.getContext('2d');
-
-            function wrapText(context, text, x, y, maxWidth, lineHeight) {
-                let words = text.split(' '); let line = ''; let currentY = y;
-                for(let n = 0; n < words.length; n++) {
-                    let testLine = line + words[n] + ' ';
-                    let metrics = context.measureText(testLine);
-                    let testWidth = metrics.width;
-                    if (testWidth > maxWidth && n > 0) {
-                        context.fillText(line, x, currentY);
-                        line = words[n] + ' '; currentY += lineHeight;
-                    } else { line = testLine; }
-                }
-                context.fillText(line, x, currentY);
-            }
-
-            let grad = ctx.createLinearGradient(0, 0, W, H);
-            grad.addColorStop(0, bgGrad.c1);
-            grad.addColorStop(1, bgGrad.c2);
-            ctx.fillStyle = grad;
-            ctx.roundRect ? ctx.roundRect(0, 0, W, H, 20) : ctx.fillRect(0, 0, W, H);
-            ctx.fill();
-
-            ctx.fillStyle = 'rgba(255,255,255,0.96)';
-            ctx.beginPath();
-            ctx.roundRect ? ctx.roundRect(20, 20, W-40, H-40, 16) : ctx.fillRect(20, 20, W-40, H-40);
-            ctx.fill();
-
-            let avatarX = 120, avatarY = 140, avatarR = 75;
-            let faseAtual = s.fase || 'jovem-adulto';
-            let imgSrc = s.img && (s.img[faseAtual] || s.img['jovem-adulto'] || Object.values(s.img).find(v=>v)) || null;
-
-            const drawCardContent = () => {
-                ctx.save();
-                ctx.beginPath(); ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI*2); ctx.clip();
-                if (imgSrc) {
-                    try { 
-                        let img = new Image(); img.src = imgSrc; 
-                        ctx.drawImage(img, avatarX - avatarR, avatarY - avatarR, avatarR*2, avatarR*2); 
-                    } catch(e) { }
-                } else {
-                    ctx.fillStyle = '#e4ebf5'; ctx.fillRect(avatarX-avatarR, avatarY-avatarR, avatarR*2, avatarR*2);
-                    ctx.font = '55px serif'; ctx.textAlign='center'; ctx.fillStyle = '#999'; ctx.fillText('👤', avatarX, avatarY+20);
-                }
-                ctx.restore();
-
-                ctx.strokeStyle = bgGrad.text; ctx.lineWidth = 4;
-                ctx.beginPath(); ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI*2); ctx.stroke();
-
-                let statusIcon = s.status === 'Ancestral (Morto)' ? '🪦' : '🟢';
-                ctx.fillStyle = '#f0f4f8';
-                ctx.beginPath(); ctx.roundRect(50, 235, 140, 32, 16); ctx.fill();
-                ctx.fillStyle = '#444'; ctx.font = 'bold 12px Nunito, sans-serif'; ctx.textAlign = 'center';
-                let shortFase = (s.fase || 'Adulto').split('-').map(w=>w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                ctx.fillText(`${statusIcon} ${shortFase}`, 120, 256);
-                
-                ctx.fillStyle = bgGrad.tagBg;
-                ctx.beginPath(); ctx.roundRect(50, 275, 140, 28, 14); ctx.fill();
-                ctx.fillStyle = bgGrad.tagText; ctx.font = 'bold 11px Nunito, sans-serif';
-                ctx.fillText(`${bgGrad.icon} ${bgGrad.occult}`, 120, 294);
-                ctx.textAlign = 'left';
-
-                let startX = 240;
-                
-                ctx.fillStyle = bgGrad.text; ctx.font = '900 32px Nunito, sans-serif';
-                ctx.fillText(s.nome, startX, 80);
-                ctx.strokeStyle = '#eee'; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.moveTo(startX, 95); ctx.lineTo(650, 95); ctx.stroke();
-
-                ctx.fillStyle = '#555'; ctx.font = 'italic 14px Nunito, sans-serif';
-                wrapText(ctx, `"${narrativaText}"`, startX, 125, 400, 22);
-
-                ctx.fillStyle = '#333'; ctx.font = 'bold 12px Nunito, sans-serif';
-                ctx.fillText('IDENTIDADE', startX, 205);
-                
-                let currentX = startX;
-                let currentY = 215;
-                if(tracosArr.length === 0) tracosArr = ['Sem traços definidos'];
-                tracosArr.slice(0, 5).forEach(t => { 
-                    ctx.font = 'bold 11px Nunito, sans-serif';
-                    let textWidth = ctx.measureText(t).width;
-                    let chipWidth = textWidth + 24;
-                    if(currentX + chipWidth > 650) { currentX = startX; currentY += 30; } 
-                    ctx.fillStyle = bgGrad.tagBg;
-                    ctx.beginPath(); ctx.roundRect(currentX, currentY, chipWidth, 24, 12); ctx.fill();
-                    ctx.fillStyle = bgGrad.tagText;
-                    ctx.fillText(t, currentX + 12, currentY + 16);
-                    currentX += chipWidth + 8;
-                });
-
-                let familyY = currentY + 45;
-                ctx.fillStyle = '#333'; ctx.font = 'bold 12px Nunito, sans-serif';
-                ctx.fillText('DINÂMICA FAMILIAR', startX, familyY);
-                ctx.font = '13px Nunito, sans-serif';
-                
-                let conjTxt = s.spouse ? getNome(s.spouse) : 'Nenhum';
-                let filTxt = filhos.length > 0 ? filhos.map(f=>f.nome).join(', ') : 'Nenhum';
-                if(filTxt.length > 55) filTxt = filTxt.substring(0, 52) + '...';
-                
-                let relIcon = s.relStatus === 'separado' ? '💔' : s.relStatus === 'viuvo' ? '🥀' : '💍';
-                ctx.fillText(`${relIcon} Parceiro(a): ${conjTxt}`, startX, familyY + 25);
-                ctx.fillText(`👶 Descendentes: ${filTxt}`, startX, familyY + 45);
-
-                ctx.fillStyle = bgGrad.tagBg;
-                ctx.fillRect(20, H-45, W-40, 25);
-                ctx.fillStyle = bgGrad.text;
-                ctx.font = 'bold 10px Nunito, Arial, sans-serif';
-                ctx.fillText('THE SIMS 4 • LEGACY COMPANION', 35, H-28);
-                ctx.textAlign = 'right';
-                ctx.fillText(new Date().toLocaleDateString('pt-BR'), W-35, H-28);
-                
-                const link = document.createElement('a');
-                link.download = `Perfil_${s.nome.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                showToast("✅ Card do Sim exportado com novo visual!");
-            };
-
-            if (imgSrc) {
-                let img = new Image();
-                img.onload = () => { drawCardContent(); };
-                img.onerror = () => { imgSrc = null; drawCardContent(); };
-                img.src = imgSrc;
-            } else {
-                drawCardContent();
-            }
-        }
 
         function toggleGerenciadorTags() {
             let painel = document.getElementById('painel-gerenciador-tags');
@@ -3565,7 +3441,396 @@ async function deletarFotoPrincipal(idFoto) {
     showToast("Foto removida.");
 }
 
-        window.onload = function() {
+
+        // ============================================================
+        // MODO APRESENTAÇÃO / STORYTELLING
+        // ============================================================
+        let apresentacaoEntradas = [];
+        let apresentacaoIndex = 0;
+        let apresentacaoFiltroTag = 'TODOS';
+
+        const APRES_TAG_CONFIG = {
+            'NASCIMENTO':    { emoji:'👶', cor:'#3b82f6', bg:'rgba(59,130,246,0.15)', border:'rgba(59,130,246,0.4)' },
+            'FASES DE VIDA': { emoji:'🎂', cor:'#f97316', bg:'rgba(249,115,22,0.15)', border:'rgba(249,115,22,0.4)' },
+            'MORTE':         { emoji:'💀', cor:'#9ca3af', bg:'rgba(156,163,175,0.15)', border:'rgba(156,163,175,0.4)' },
+            'CASAMENTO':     { emoji:'💍', cor:'#ec4899', bg:'rgba(236,72,153,0.15)', border:'rgba(236,72,153,0.4)' },
+            'SEPARAÇÃO':     { emoji:'💔', cor:'#ef4444', bg:'rgba(239,68,68,0.15)',   border:'rgba(239,68,68,0.4)' },
+            'DRAMA':         { emoji:'🔥', cor:'#f97316', bg:'rgba(249,115,22,0.15)', border:'rgba(249,115,22,0.4)' },
+            'CONQUISTA':     { emoji:'🏆', cor:'#eab308', bg:'rgba(234,179,8,0.15)',  border:'rgba(234,179,8,0.4)' },
+            'GERAL':         { emoji:'📖', cor:'#60a5fa', bg:'rgba(96,165,250,0.12)', border:'rgba(96,165,250,0.3)' },
+        };
+
+        function parsearHistoria(filtroTag) {
+            let hist = db.historia || '';
+            let linhas = hist.split('\n').filter(l => l.trim());
+            let entradas = [];
+            linhas.forEach(linha => {
+                // Formato: [DD/MM/YYYY] [TAG] texto
+                let match = linha.match(/^\[([^\]]+)\]\s*\[([^\]]+)\]\s*([\s\S]*)$/);
+                if (match) {
+                    let data = match[1].trim();
+                    let tag  = match[2].trim();
+                    let txt  = match[3].trim();
+                    entradas.push({ data, tag, txt });
+                } else {
+                    // Linha sem tag ou formato antigo
+                    let match2 = linha.match(/^\[([^\]]+)\]\s*([\s\S]*)$/);
+                    if (match2) {
+                        entradas.push({ data: match2[1], tag: 'GERAL', txt: match2[2].trim() });
+                    } else if (linha.trim()) {
+                        entradas.push({ data: '', tag: 'GERAL', txt: linha.trim() });
+                    }
+                }
+            });
+            if (filtroTag && filtroTag !== 'TODOS') {
+                entradas = entradas.filter(e => e.tag.toUpperCase().includes(filtroTag.toUpperCase()));
+            }
+            return entradas;
+        }
+
+        function abrirApresentacao() {
+            if (!db.historia || db.historia.trim() === '') {
+                return showToast("O Livro da Família está vazio! Registre alguns eventos primeiro.");
+            }
+            apresentacaoFiltroTag = 'TODOS';
+            apresentacaoEntradas = parsearHistoria('TODOS');
+            if (apresentacaoEntradas.length === 0) return showToast("Nenhuma entrada encontrada.");
+            apresentacaoIndex = 0;
+
+            // Nome da família
+            let nomeF = currentFamilyName || 'Família';
+            document.getElementById('apres-familia-nome').textContent = 'Legado ' + nomeF;
+
+            // Monta filtros de tag únicos
+            let tagsUnicas = [...new Set(parsearHistoria('TODOS').map(e => e.tag.toUpperCase()))];
+            let filtrosHtml = '<button onclick="filtrarApresentacao(\'TODOS\', this)" style="background:rgba(255,215,100,0.2); border:1px solid rgba(255,215,100,0.4); color:rgba(255,215,100,0.9); padding:4px 14px; border-radius:20px; font-size:10px; font-family:\'Nunito\',sans-serif; font-weight:700; cursor:pointer; letter-spacing:1px; text-transform:uppercase;">Todos</button>';
+            tagsUnicas.forEach(tag => {
+                let cfg = APRES_TAG_CONFIG[tag] || { emoji:'🏷️', cor:'#a78bfa', bg:'rgba(167,139,250,0.12)', border:'rgba(167,139,250,0.3)' };
+                filtrosHtml += `<button onclick="filtrarApresentacao('${tag}', this)" style="background:${cfg.bg}; border:1px solid ${cfg.border}; color:${cfg.cor}; padding:4px 14px; border-radius:20px; font-size:10px; font-family:'Nunito',sans-serif; font-weight:700; cursor:pointer; letter-spacing:1px; text-transform:uppercase;">${cfg.emoji} ${tag}</button>`;
+            });
+            document.getElementById('apres-filtros').innerHTML = filtrosHtml;
+
+            document.getElementById('modal-apresentacao').style.display = 'flex';
+            renderEntradaApresentacao();
+            document.addEventListener('keydown', teclaApresentacao);
+        }
+
+        function filtrarApresentacao(tag, btn) {
+            apresentacaoFiltroTag = tag;
+            apresentacaoEntradas = parsearHistoria(tag);
+            apresentacaoIndex = 0;
+            // Atualizar visual dos botões de filtro
+            document.querySelectorAll('#apres-filtros button').forEach(b => {
+                b.style.opacity = '0.45';
+                b.style.transform = 'scale(0.95)';
+            });
+            if (btn) { btn.style.opacity = '1'; btn.style.transform = 'scale(1)'; }
+            renderEntradaApresentacao();
+        }
+
+        function renderEntradaApresentacao() {
+            if (apresentacaoEntradas.length === 0) {
+                document.getElementById('apres-texto').textContent = 'Nenhum evento com esta tag.';
+                document.getElementById('apres-tag-badge').textContent = '';
+                document.getElementById('apres-data').textContent = '';
+                document.getElementById('apres-contador').textContent = '0 / 0';
+                document.getElementById('apres-progresso').style.width = '0%';
+                return;
+            }
+            let entrada = apresentacaoEntradas[apresentacaoIndex];
+            let total   = apresentacaoEntradas.length;
+
+            // Tag badge
+            let tagKey = entrada.tag.toUpperCase();
+            let cfg = APRES_TAG_CONFIG[tagKey] || { emoji:'🏷️', cor:'#a78bfa', bg:'rgba(167,139,250,0.12)', border:'rgba(167,139,250,0.3)' };
+            let badge = document.getElementById('apres-tag-badge');
+            badge.textContent = cfg.emoji + ' ' + entrada.tag.toUpperCase();
+            badge.style.cssText += `; background:${cfg.bg}; border:1px solid ${cfg.border}; color:${cfg.cor};`;
+
+            // Data
+            document.getElementById('apres-data').textContent = entrada.data ? '📅 ' + entrada.data : '';
+
+            // Texto com fade
+            let txtEl = document.getElementById('apres-texto');
+            txtEl.style.opacity = '0';
+            setTimeout(() => {
+                txtEl.textContent = entrada.txt;
+                txtEl.style.opacity = '1';
+            }, 150);
+
+            // Contador e progresso
+            document.getElementById('apres-contador').textContent = (apresentacaoIndex + 1) + ' / ' + total;
+            let pct = total > 1 ? ((apresentacaoIndex / (total - 1)) * 100).toFixed(1) : 100;
+            document.getElementById('apres-progresso').style.width = pct + '%';
+
+            // Botões de nav
+            document.getElementById('apres-btn-prev').style.opacity = apresentacaoIndex === 0 ? '0.3' : '1';
+            document.getElementById('apres-btn-next').style.opacity = apresentacaoIndex === total - 1 ? '0.3' : '1';
+
+            // Fundo sutil varia por tag
+            let bgMap = {
+                'MORTE': 'linear-gradient(135deg, #0f0f14 0%, #1a0a0a 50%, #0a0a14 100%)',
+                'CASAMENTO': 'linear-gradient(135deg, #0a0a14 0%, #1a0a12 50%, #0a0f14 100%)',
+                'CONQUISTA': 'linear-gradient(135deg, #0a0a14 0%, #130f00 50%, #0a0a0a 100%)',
+                'DRAMA': 'linear-gradient(135deg, #0a0a14 0%, #1a0800 50%, #0a0a14 100%)',
+                'NASCIMENTO': 'linear-gradient(135deg, #0a0a14 0%, #00102a 50%, #0a0a14 100%)',
+            };
+            document.getElementById('apres-bg').style.background = bgMap[tagKey] || 'linear-gradient(135deg, #0a0a14 0%, #12091e 50%, #0a1020 100%)';
+        }
+
+        function navegarApresentacao(dir) {
+            let novo = apresentacaoIndex + dir;
+            if (novo < 0 || novo >= apresentacaoEntradas.length) return;
+            apresentacaoIndex = novo;
+            renderEntradaApresentacao();
+        }
+
+        function fecharApresentacao() {
+            document.getElementById('modal-apresentacao').style.display = 'none';
+            document.removeEventListener('keydown', teclaApresentacao);
+        }
+
+        function teclaApresentacao(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); navegarApresentacao(1); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); navegarApresentacao(-1); }
+            else if (e.key === 'Escape') fecharApresentacao();
+        }
+
+function exportarPerfilSim(simId) {
+    let s = db.sims.find(x => String(x.id) === String(simId));
+    if (!s) return alert("Sim não encontrado.");
+
+    const getNome = (fid) => db.sims.find(x => String(x.id) === String(fid))?.nome || "—";
+    let filhos = db.sims.filter(x => String(x.p1) === String(s.id) || String(x.p2) === String(s.id));
+
+    let textoGeral = ((s.tracos || "") + " " + (s.extra || "")).toLowerCase();
+    let isVamp = textoGeral.includes('vampir');
+    let isSpell = textoGeral.includes('brux') || textoGeral.includes('feiticeir') || textoGeral.includes('mágic');
+    let isMermaid = textoGeral.includes('serei') || textoGeral.includes('tritão') || textoGeral.includes('oceano');
+    let isAlien = textoGeral.includes('alien') || textoGeral.includes('extraterrestre');
+    let isWolf = textoGeral.includes('lobisomem') || textoGeral.includes('lua');
+    
+    let bgGrad = { c1: '#0079C1', c2: '#7CD700', text: '#0079C1', tagBg: '#e4ebf5', tagText: '#0079C1', icon: '👤', occult: 'Sim Humano' };
+    if (isVamp) bgGrad = { c1: '#2b0000', c2: '#7a1022', text: '#8b0000', tagBg: '#f5e4e6', tagText: '#8b0000', icon: '🦇', occult: 'Vampiro(a)' };
+    else if (isSpell) bgGrad = { c1: '#31124b', c2: '#6a0dad', text: '#6a0dad', tagBg: '#ece4f5', tagText: '#6a0dad', icon: '🔮', occult: 'Feiticeiro(a)' };
+    else if (isMermaid) bgGrad = { c1: '#0077b6', c2: '#00b4d8', text: '#0077b6', tagBg: '#e4f3f5', tagText: '#0077b6', icon: '🧜‍♀️', occult: 'Sereia/Tritão' };
+    else if (isAlien) bgGrad = { c1: '#000000', c2: '#1a5e20', text: '#2e7d32', tagBg: '#e4f5e7', tagText: '#2e7d32', icon: '👽', occult: 'Alienígena' };
+    else if (isWolf) bgGrad = { c1: '#3e2723', c2: '#795548', text: '#5d4037', tagBg: '#f5efe4', tagText: '#5d4037', icon: '🐺', occult: 'Lobisomem' };
+    
+    if (s.status === 'Ancestral (Morto)') {
+        bgGrad = { c1: '#2c3e50', c2: '#4ca1af', text: '#34495e', tagBg: '#eaeced', tagText: '#34495e', icon: '🪦', occult: 'Espírito Ancestral' };
+    }
+
+    let tracosArr = s.tracos ? s.tracos.split(',').map(t=>t.trim()).filter(Boolean) : [];
+    let destqueTraco = tracosArr.length > 0 ? tracosArr[0].toLowerCase() : "temperamento único";
+    let relText = s.relStatus === 'casado' ? "Compartilha a vida com seu grande amor" : 
+                  s.relStatus === 'separado' ? "Carrega as marcas de uma separação" : 
+                  s.relStatus === 'viuvo' ? "Guarda a doce memória de um amor que se foi" : "Segue trilhando uma jornada independente";
+    
+    let aspiracao = "deixar sua marca no legado da família";
+    if (s.extra && s.extra.trim().length > 3) {
+        aspiracao = s.extra.split('.')[0].toLowerCase().trim();
+    }
+    
+    let narrativaText = `Atualmente em sua fase de ${s.fase || 'jovem adulto'}, ${s.nome} expressa a essência viva de um(a) ${bgGrad.occult}. Marcado(a) por manifestar um perfil ${destqueTraco}, busca persistentemente ${aspiracao}. Em seus relacionamentos, ${relText.toLowerCase()}.`;
+
+    // Configuração Base do Canvas
+    const W = 500, H = 740;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Função Inteligente de Quebra de Linhas Restrita à Janela do Card
+    function wrapTextAndGetY(context, text, x, y, maxWidth, lineHeight) {
+        let words = text.split(' '); let line = ''; let currentY = y;
+        for(let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + ' ';
+            let metrics = context.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+                context.fillText(line, x, currentY);
+                line = words[n] + ' '; currentY += lineHeight;
+            } else { line = testLine; }
+        }
+        context.fillText(line, x, currentY);
+        return currentY + lineHeight;
+    }
+
+    // Desenha Fundo com Gradiente
+    let grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, bgGrad.c1);
+    grad.addColorStop(1, bgGrad.c2);
+    ctx.fillStyle = grad;
+    ctx.roundRect ? ctx.roundRect(0, 0, W, H, 24) : ctx.fillRect(0, 0, W, H);
+    ctx.fill();
+
+    // Painel Interno Branco Limpo
+    ctx.fillStyle = 'rgba(255,255,255,0.97)';
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(18, 18, W-36, H-36, 18) : ctx.fillRect(18, 18, W-36, H-36);
+    ctx.fill();
+
+    // Posições e Margens Controladas
+    let avatarX = 85, avatarY = 95, avatarR = 55;
+    let faseAtual = s.fase || 'jovem-adulto';
+    let imgSrc = s.img && (s.img[faseAtual] || s.img['jovem-adulto'] || Object.values(s.img).find(v=>v)) || null;
+
+    const drawCardContent = () => {
+        // Renderiza Imagem do Sim
+        ctx.save();
+        ctx.beginPath(); ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI*2); ctx.clip();
+        if (imgSrc) {
+            try { 
+                let img = new Image(); img.src = imgSrc; 
+                ctx.drawImage(img, avatarX - avatarR, avatarY - avatarR, avatarR*2, avatarR*2); 
+            } catch(e) { }
+        } else {
+            ctx.fillStyle = '#e4ebf5'; ctx.fillRect(avatarX-avatarR, avatarY-avatarR, avatarR*2, avatarR*2);
+            ctx.font = '45px serif'; ctx.textAlign='center'; ctx.fillStyle = '#999'; ctx.fillText('👤', avatarX, avatarY+15);
+        }
+        ctx.restore();
+
+        // Borda do Avatar
+        ctx.strokeStyle = bgGrad.text; ctx.lineWidth = 3.5;
+        ctx.beginPath(); ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI*2); ctx.stroke();
+
+        // Badge de Ciclo de Vida Abaixo do Avatar
+        let statusIcon = s.status === 'Ancestral (Morto)' ? '🪦' : '🟢';
+        ctx.fillStyle = '#f0f4f8';
+        ctx.beginPath(); ctx.roundRect(30, 162, 110, 24, 12); ctx.fill();
+        ctx.fillStyle = '#444'; ctx.font = 'bold 11px Nunito, sans-serif'; ctx.textAlign = 'center';
+        let shortFase = (s.fase || 'Adulto').split('-').map(w=>w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        ctx.fillText(`${statusIcon} ${shortFase}`, 85, 178);
+
+        // --- DADOS DO CABEÇALHO DIREITO ---
+        ctx.textAlign = 'left';
+        
+        // Ajuste automático caso o nome do Sim seja muito extenso
+        ctx.fillStyle = bgGrad.text; 
+        let nomeTamanhoOriginal = ctx.measureText(s.nome).width;
+        ctx.font = nomeTamanhoOriginal > 260 ? '900 22px Nunito, sans-serif' : '900 28px Nunito, sans-serif';
+        ctx.fillText(s.nome, 160, 85);
+        
+        // Tag Espécie / Ocultismo
+        ctx.fillStyle = bgGrad.tagBg;
+        ctx.beginPath(); ctx.roundRect(160, 105, 155, 26, 13); ctx.fill();
+        ctx.fillStyle = bgGrad.tagText; ctx.font = 'bold 12px Nunito, sans-serif';
+        ctx.fillText(`${bgGrad.icon} ${bgGrad.occult}`, 175, 122);
+
+        // Sistema de Navegação Vertical Dinâmica (Garante distribuição de espaço)
+        let currentY = 225;
+        const startX = 40;
+        const maxX = W - 40; // Limite exato de 460px
+        const maxTextWidth = maxX - startX; // Largura interna útil de 420px
+
+        function aplicarDivisorSecao(titulo, y) {
+            ctx.fillStyle = bgGrad.text; ctx.font = '900 12px Nunito, sans-serif';
+            ctx.fillText(titulo.toUpperCase(), startX, y);
+            ctx.strokeStyle = '#eef2f7'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(startX, y + 8); ctx.lineTo(maxX, y + 8); ctx.stroke();
+            return y + 28;
+        }
+
+        // --- SEÇÃO 1: BIOGRAFIA NARRATIVA ---
+        currentY = aplicarDivisorSecao('Resumo da Trajetória', currentY);
+        ctx.fillStyle = '#4a5568'; ctx.font = 'italic 14px Nunito, sans-serif';
+        currentY = wrapTextAndGetY(ctx, `"${narrativaText}"`, startX, currentY, maxTextWidth, 22);
+        currentY += 20;
+
+        // --- SEÇÃO 2: IDENTIDADE E TRAÇOS ---
+        currentY = aplicarDivisorSecao('Traços de Personalidade', currentY);
+        let chipX = startX;
+        let chipY = currentY;
+        if(tracosArr.length === 0) tracosArr = ['Sem traços definidos'];
+        
+        tracosArr.forEach(t => { 
+            ctx.font = 'bold 12px Nunito, sans-serif';
+            let textWidth = ctx.measureText(t).width;
+            let chipWidth = textWidth + 24;
+            
+            // Quebra de linha inteligente dos blocos/chips de traço
+            if(chipX + chipWidth > maxX) { 
+                chipX = startX; 
+                chipY += 32; 
+            } 
+            ctx.fillStyle = bgGrad.tagBg;
+            ctx.beginPath(); ctx.roundRect(chipX, chipY, chipWidth, 26, 13); ctx.fill();
+            ctx.fillStyle = bgGrad.tagText;
+            ctx.fillText(t, chipX + 12, chipY + 17);
+            chipX += chipWidth + 8;
+        });
+        currentY = chipY + 45;
+
+        // --- SEÇÃO 3: DINÂMICA E LINHAGEM ---
+        currentY = aplicarDivisorSecao('Relações & Dinâmica Familiar', currentY);
+        
+        let conjTxt = s.spouse ? getNome(s.spouse) : 'Nenhum vínculo ativo';
+        let filTxt = filhos.length > 0 ? filhos.map(f=>f.nome).join(', ') : 'Nenhum descendente direto registrado';
+        let relIcon = s.relStatus === 'separado' ? '💔' : s.relStatus === 'viuvo' ? '🥀' : '💍';
+        
+        // Exibição do Companheiro
+        ctx.fillStyle = '#2d3748'; ctx.font = '700 13px Nunito, sans-serif';
+        ctx.fillText(`${relIcon} Cônjuge/Parceiro:`, startX, currentY);
+        ctx.fillStyle = '#4a5568'; ctx.font = '600 13px Nunito, sans-serif';
+        ctx.fillText(conjTxt, startX + 155, currentY);
+        currentY += 26;
+        
+        // Exibição da Linhagem (Com quebra automática para legados com muitos filhos)
+        ctx.fillStyle = '#2d3748'; ctx.font = '700 13px Nunito, sans-serif';
+        ctx.fillText(`👶 Descendentes:`, startX, currentY);
+        ctx.fillStyle = '#4a5568'; ctx.font = '500 13px Nunito, sans-serif';
+        currentY = wrapTextAndGetY(ctx, filTxt, startX + 120, currentY, maxX - (startX + 120), 20);
+
+        // --- RODAPÉ BRANDING DO COMPANION ---
+        ctx.fillStyle = bgGrad.tagBg;
+        ctx.fillRect(18, H-45, W-36, 27);
+        ctx.fillStyle = bgGrad.text;
+        ctx.font = 'bold 10px Nunito, Arial, sans-serif';
+        ctx.fillText('THE SIMS 4 • LEGACY COMPANION', 35, H-28);
+        ctx.textAlign = 'right';
+        ctx.fillText(new Date().toLocaleDateString('pt-BR'), W-35, H-28);
+        
+        // Exportação Final da Imagem
+        const link = document.createElement('a');
+        link.download = `Perfil_${s.nome.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast("✅ Card do Sim exportado!");
+    };
+
+    if (imgSrc) {
+        let img = new Image();
+        img.onload = () => { drawCardContent(); };
+        img.onerror = () => { imgSrc = null; drawCardContent(); };
+        img.src = imgSrc;
+    } else {
+        drawCardContent();
+    }
+}
+
+
+        function abrirCardPreview(canvas, nomesSim) {
+            let previewCanvas = document.getElementById('canvas-card-preview');
+            previewCanvas.width = canvas.width;
+            previewCanvas.height = canvas.height;
+            let pCtx = previewCanvas.getContext('2d');
+            pCtx.drawImage(canvas, 0, 0);
+
+            document.getElementById('btn-baixar-card').onclick = () => {
+                const link = document.createElement('a');
+                link.download = `Card_${(nomesSim || 'Sim').replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast("✅ Card exportado com sucesso!");
+            };
+
+            document.getElementById('modal-card-preview').style.display = 'flex';
+        }
+
+        function fecharCardPreview() {
+            document.getElementById('modal-card-preview').style.display = 'none';
+        }
+
+	window.onload = function() {
             iniciarDB();
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') fecharLightbox();
@@ -3577,8 +3842,77 @@ async function deletarFotoPrincipal(idFoto) {
                     verificarSessaoDrive();
                 }
             }, 120000);
-};
+	};
 
     </script>
+    <!-- ===== MODAL: MODO APRESENTAÇÃO / STORYTELLING ===== -->
+    <div id="modal-apresentacao" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; flex-direction:column; overflow:hidden;">
+
+        <!-- Fundo com textura e gradiente cinematográfico -->
+        <div id="apres-bg" style="position:absolute; inset:0; background:linear-gradient(135deg, #0a0a14 0%, #12091e 50%, #0a1020 100%); z-index:0;"></div>
+        <div style="position:absolute; inset:0; background-image: radial-gradient(ellipse at 20% 50%, rgba(90,40,120,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(20,60,100,0.12) 0%, transparent 60%); z-index:0; pointer-events:none;"></div>
+        <div style="position:absolute; inset:0; background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%224%22 stitchTiles=%22stitch%22/><feColorMatrix type=%22saturate%22 values=%220%22/></filter><rect width=%22400%22 height=%22400%22 filter=%22url(%23n)%22 opacity=%220.04%22/></svg>'); opacity:0.5; z-index:0; pointer-events:none;"></div>
+
+        <!-- Header -->
+        <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center; padding:20px 35px; border-bottom:1px solid rgba(255,255,255,0.07);">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/67fd436abea8a2622d7333f25780b164c3510ade/SimStoria.png" style="width:30px; height:30px; opacity:0.8; object-fit:contain;">
+                <div>
+                    <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.4); font-family:'Nunito',sans-serif; font-weight:700;">SimStoria</div>
+                    <div id="apres-familia-nome" style="font-size:16px; color:rgba(255,255,255,0.85); font-family:'Nunito',sans-serif; font-weight:800; line-height:1.1;"></div>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="apres-contador" style="font-size:12px; font-family:'Nunito',sans-serif; color:rgba(255,255,255,0.35); letter-spacing:1px;"></span>
+                <button onclick="fecharApresentacao()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.6); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">×</button>
+            </div>
+        </div>
+
+        <!-- Filtros de tag -->
+        <div style="position:relative; z-index:1; display:flex; gap:6px; flex-wrap:wrap; padding:10px 35px; border-bottom:1px solid rgba(255,255,255,0.05);" id="apres-filtros"></div>
+
+        <!-- Stage principal -->
+        <div style="position:relative; z-index:1; flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:30px 40px; max-width:900px; width:100%; margin:0 auto; box-sizing:border-box;">
+
+            <!-- Decoração ornamental topo -->
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:28px; opacity:0.4;">
+                <div style="height:1px; width:60px; background:linear-gradient(to left, rgba(255,215,100,0.6), transparent);"></div>
+                <div style="font-size:14px; color:rgba(255,215,100,0.8);">✦</div>
+                <div style="height:1px; width:60px; background:linear-gradient(to right, rgba(255,215,100,0.6), transparent);"></div>
+            </div>
+
+            <!-- Badge de tag -->
+            <div id="apres-tag-badge" style="margin-bottom:22px; padding:5px 20px; border-radius:30px; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; font-family:'Nunito',sans-serif;"></div>
+
+            <!-- Data -->
+            <div id="apres-data" style="font-size:13px; letter-spacing:2px; color:rgba(255,255,255,0.35); font-family:'Nunito',sans-serif; font-weight:700; text-transform:uppercase; margin-bottom:20px;"></div>
+
+            <!-- Texto principal da entrada -->
+            <div id="apres-texto" style="font-size:clamp(18px, 2.5vw, 26px); line-height:1.7; color:rgba(255,255,255,0.9); text-align:center; font-family:Georgia,'Times New Roman',serif; font-style:italic; max-width:700px; transition:opacity 0.3s;"></div>
+
+            <!-- Decoração ornamental fundo -->
+            <div style="display:flex; align-items:center; gap:10px; margin-top:28px; opacity:0.4;">
+                <div style="height:1px; width:60px; background:linear-gradient(to left, rgba(255,215,100,0.6), transparent);"></div>
+                <div style="font-size:14px; color:rgba(255,215,100,0.8);">✦</div>
+                <div style="height:1px; width:60px; background:linear-gradient(to right, rgba(255,215,100,0.6), transparent);"></div>
+            </div>
+        </div>
+
+        <!-- Controles de navegação -->
+        <div style="position:relative; z-index:1; display:flex; justify-content:center; align-items:center; gap:20px; padding:20px 35px; border-top:1px solid rgba(255,255,255,0.07);">
+            <button onclick="navegarApresentacao(-1)" id="apres-btn-prev" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); padding:12px 28px; border-radius:30px; cursor:pointer; font-size:13px; font-family:'Nunito',sans-serif; font-weight:700; letter-spacing:1px; transition:all 0.2s; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">← ANTERIOR</button>
+            
+            <!-- Barra de progresso -->
+            <div style="flex:1; max-width:200px; height:3px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                <div id="apres-progresso" style="height:100%; background:linear-gradient(to right, rgba(255,215,100,0.6), rgba(255,180,50,0.9)); border-radius:3px; transition:width 0.4s ease; width:0%;"></div>
+            </div>
+            
+            <button onclick="navegarApresentacao(1)" id="apres-btn-next" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); padding:12px 28px; border-radius:30px; cursor:pointer; font-size:13px; font-family:'Nunito',sans-serif; font-weight:700; letter-spacing:1px; transition:all 0.2s; display:flex; align-items:center; gap:8px;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">PRÓXIMO →</button>
+        </div>
+
+        <!-- Dica de teclado -->
+        <div style="position:relative; z-index:1; text-align:center; padding:8px; font-size:10px; color:rgba(255,255,255,0.18); font-family:'Nunito',sans-serif; letter-spacing:1px;">← → NAVEGAR &nbsp;|&nbsp; ESC FECHAR &nbsp;|&nbsp; BARRA DE ESPAÇO PRÓXIMO</div>
+    </div>
+
 </body>
 </html>
