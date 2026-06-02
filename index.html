@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimStoria - Companion Narrativo em Implementação - v47 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v48 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -177,6 +177,7 @@
         <button class="nav-btn" onclick="switchTab('tab-tree')">🌳 The Chart - Conexões</button>
         <button class="nav-btn" onclick="switchTab('tab-ia')">🤖 I.A. e Histórias</button>
         <button class="nav-btn" onclick="switchTab('tab-history')">📖 Livro e Metas</button>
+	<button class="nav-btn" id="btn-nav-galeria" onclick="switchTab('tab-galeria')">📸 Galeria de Recordações 🔒</button>
         <button class="nav-btn" onclick="switchTab('tab-laws')">📜 Livro de Regras</button>
         <button class="nav-btn" onclick="switchTab('tab-config')">⚙️ Configurações</button>
         <button class="nav-btn" onclick="switchTab('tab-help')">📖 Ajuda</button>
@@ -443,6 +444,92 @@
                 <div id="lista-metas"></div>
             </div>
         </div>
+<div id="tab-galeria" class="tab-pane">
+
+    <div id="banner-drive-expirado" style="display:none; background:#fff3cd; border:1px solid #ffc107; border-radius:12px; padding:12px 16px; margin-bottom:15px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <span style="font-size:13px; font-weight:700; color:#856404;">⚠️ Sua sessão do Google Drive está expirando. Reconecte para não perder seus uploads.</span>
+        <button class="btn-main" style="width:auto; margin:0; background:#4285F4; padding:7px 14px; font-size:12px;" onclick="autenticarGoogle()">Reconectar Drive</button>
+    </div>
+
+    <div class="panel" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <h2 style="margin:0;">📸 Galeria de Recordações Legado</h2>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-main" style="width:auto; margin:0; background: var(--ts4-blue);" onclick="abrirModalNovoAlbum()">+ Novo Álbum</button>
+            <button class="btn-main btn-sec" style="width:auto; margin:0;" onclick="voltarParaAlbuns()" id="btn-voltar-albuns" style="display:none;">⬅️ Ver Outros Álbuns</button>
+        </div>
+    </div>
+
+    <div id="secao-albuns">
+        <p style="font-size:14px; color:#666;">Crie álbuns para separar suas gerações, desafios ou momentos especiais do seu Legado.</p>
+        <div class="card-grid" id="grid-albuns">
+            </div>
+    </div>
+
+    <div id="secao-fotos" style="display: none;">
+        <div class="panel" style="background: #f0f7ff; border-left: 4px solid var(--ts4-blue); margin-bottom: 20px;">
+            <h3 id="nome-album-ativo" style="margin:0; color: var(--ts4-blue);">Nome do Álbum</h3>
+            <p id="desc-album-ativo" style="font-size:13px; margin:5px 0 0 0; color:#555;">Descrição</p>
+            <button class="btn-main" style="width: 200px; margin-top: 15px; background: var(--ts4-green);" onclick="abrirModalNovaFoto()">+ Adicionar Foto / Recordação</button>
+        </div>
+        
+        <div class="card-grid" id="grid-fotos">
+            </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-album" onclick="document.getElementById('modal-album').style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2>✨ Criar Novo Álbum</h2>
+        <label>Nome do Álbum (ex: Geração 1 - O Começo):</label>
+        <input type="text" id="album-nome" placeholder="Digite o nome...">
+        <label style="margin-top:10px; display:block;">Descrição ou Meta do Álbum:</label>
+        <textarea id="album-desc" placeholder="O que este álbum representa?"></textarea>
+        <button class="btn-main" onclick="salvarNovoAlbum()">Criar Álbum</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-drive-galeria" onclick="document.getElementById('modal-drive-galeria').style.display='none'">
+    <div class="modal-content" onclick="event.stopPropagation()" style="text-align:center; max-width:480px;">
+        <div style="font-size:60px; margin-bottom:8px;">☁️🔒</div>
+        <h2 style="color:var(--ts4-blue); margin-top:0;">Galeria exclusiva para usuários conectados</h2>
+        <p style="color:#555; font-size:14px; line-height:1.7;">
+            A <strong>Galeria de Recordações</strong> salva suas imagens diretamente no <strong>Google Drive</strong>, mantendo o arquivo principal leve e garantindo que suas memórias nunca se percam.<br><br>
+            Conecte sua conta do Google para desbloquear esta funcionalidade! 📸✨
+        </p>
+        <button class="btn-main" style="background:#4285F4; margin-bottom:10px;" onclick="document.getElementById('modal-drive-galeria').style.display='none'; autenticarGoogle();">
+            G&nbsp;&nbsp;Conectar ao Google Drive
+        </button>
+        <button class="btn-main btn-sec" onclick="document.getElementById('modal-drive-galeria').style.display='none'">
+            Fechar
+        </button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-foto" onclick="fecharModalFoto()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 id="titulo-modal-foto">📸 Nova Recordação Polaroid</h2>
+        
+        <div id="container-input-arquivo">
+            <label>Escolha a Imagem do seu The Sims 4:</label>
+            <input type="file" id="input-arquivo-foto" accept="image/*">
+        </div>
+
+        <label style="margin-top:10px; display:block;">Título do Momento:</label>
+        <input type="text" id="foto-titulo" placeholder="Ex: Primeiro beijo de Bella e Mortimer">
+
+        <label style="margin-top:10px; display:block;">Época / Fase da Vida:</label>
+        <input type="text" id="foto-data" placeholder="Ex: Jovem Adulto - Dia 3 de Primavera">
+
+        <label style="margin-top:10px; display:block;">Quem estava presente? (Marque os Sims):</label>
+        <div id="lista-sims-checkbox" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 12px; margin-top:5px;">
+            </div>
+
+        <label style="margin-top:10px; display:block;">História por trás da foto (Comentário do Narrador):</label>
+        <textarea id="foto-comentario" placeholder="Escreva os detalhes desse drama ou conquista..."></textarea>
+
+        <button class="btn-main" style="background: var(--ts4-green);" onclick="executarAcaoFotoPrincipal()">Salvar na Galeria</button>
+    </div>
+</div>
 
         <div id="tab-laws" class="tab-pane">
             <div class="panel">
@@ -996,6 +1083,9 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
         let tempFotosFases = {};
         let tempHistoricoRelacionamentos = [];
         let cropperInstance = null;
+        let tokenExpiryTime = null;
+        let pastaGaleriaId = null;
+        const driveImageCache = {};
 
         const SUGESTOES = {
             "Incêndio": "Como fazer: Deixe um Sim sem habilidade cozinhando em um fogão barato sem alarme.",
@@ -1076,6 +1166,7 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
             if (!db.config) db.config = {};
             if (!db.config.treeBgMode) db.config.treeBgMode = 'default';
             if (!db.config.treeBgCustom) db.config.treeBgCustom = '';
+            if (!db.galeria) db.galeria = { albuns: [], fotos: [] };
 
             db.sims.forEach(s => {
                 if (!s.historico_relacionamentos) s.historico_relacionamentos = [];
@@ -1134,11 +1225,14 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                     callback: (tokenResponse) => {
                         if (tokenResponse && tokenResponse.access_token) {
                             accessToken = tokenResponse.access_token;
+                            tokenExpiryTime = Date.now() + (3500 * 1000); // ~58 min antes de expirar
                             document.getElementById('google-status').innerText = "Status: 🟢 Conectado à Nuvem!";
                             document.getElementById('btn-login-google').innerText = "G Trocar Conta Google";
                             document.getElementById('btn-save-cloud').style.display = 'block';
                             atualizarListaFamilias();
                             iniciarAutoSave();
+                            atualizarBotaoGaleria();
+                            ocultarBannerExpirado();
                             hasUnsavedChanges = false;
                             showToast("Autenticado!");
                         }
@@ -1327,6 +1421,12 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
         }
 
         function switchTab(id) {
+            // GALERIA: Restrição — só acessível com Google Drive conectado
+            if (id === 'tab-galeria' && !accessToken) {
+                document.getElementById('modal-drive-galeria').style.display = 'flex';
+                return;
+            }
+
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -1334,6 +1434,11 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
             
             if(id === 'tab-tree' && window.network) {
                 setTimeout(() => window.network.fit(), 100);
+            }
+
+	    if(id === 'tab-galeria') {
+                voltarParaAlbuns(); // Garante que abre na raiz dos álbuns
+                verificarSessaoDrive();
             }
         }
 
@@ -2983,12 +3088,437 @@ function excluirFotoDiretoAlbum(simId, fase) {
         function fecharModal() { document.getElementById('modal-sim').style.display = 'none'; }
         function fecharModalSeFundo(event) { if (event.target.id === 'modal-sim') fecharModal(); }
 
+// ==========================================================================
+// REGISTRO DO MÓDULO DE GALERIA INTEGRADA DO LEGADO
+// ==========================================================================
+
+// -- Funções auxiliares de Drive para a Galeria --
+
+function atualizarBotaoGaleria() {
+    let btn = document.getElementById('btn-nav-galeria');
+    if (!btn) return;
+    btn.innerHTML = accessToken ? '📸 Galeria de Recordações' : '📸 Galeria de Recordações 🔒';
+}
+
+function verificarSessaoDrive() {
+    let banner = document.getElementById('banner-drive-expirado');
+    if (!banner) return;
+    const expirandoEm10min = tokenExpiryTime && (Date.now() > tokenExpiryTime - 10 * 60 * 1000);
+    if (!accessToken || expirandoEm10min) {
+        banner.style.display = 'flex';
+    } else {
+        banner.style.display = 'none';
+    }
+}
+
+function ocultarBannerExpirado() {
+    let banner = document.getElementById('banner-drive-expirado');
+    if (banner) banner.style.display = 'none';
+}
+
+async function obterOuCriarPastaGaleria() {
+    if (pastaGaleriaId) return pastaGaleriaId;
+    try {
+        let url = "https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'SimStoria_galeria'+and+mimeType%3D'application%2Fvnd.google-apps.folder'&fields=files(id,name)";
+        let res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + accessToken } });
+        let data = await res.json();
+        if (data.files && data.files.length > 0) {
+            pastaGaleriaId = data.files[0].id;
+            return pastaGaleriaId;
+        }
+        // Pasta não existe — cria agora
+        let createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'SimStoria_galeria', mimeType: 'application/vnd.google-apps.folder', parents: ['appDataFolder'] })
+        });
+        let folder = await createRes.json();
+        pastaGaleriaId = folder.id;
+        return pastaGaleriaId;
+    } catch(e) {
+        console.error('Erro ao buscar/criar pasta galeria no Drive:', e);
+        return null;
+    }
+}
+
+async function uploadImagemParaDrive(base64DataUrl, nomeArquivo) {
+    const byteString = atob(base64DataUrl.split(',')[1]);
+    const mimeType = base64DataUrl.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+    const blob = new Blob([ab], { type: mimeType });
+
+    const folderId = await obterOuCriarPastaGaleria();
+    if (!folderId) throw new Error('Não foi possível acessar a pasta de galeria no Drive.');
+
+    const formData = new FormData();
+    formData.append('metadata', new Blob([JSON.stringify({ name: nomeArquivo, parents: [folderId] })], { type: 'application/json' }));
+    formData.append('file', blob);
+
+    let res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: formData
+    });
+    if (!res.ok) throw new Error('Falha no upload da imagem: HTTP ' + res.status);
+    let data = await res.json();
+    return data.id; // fileId do Drive
+}
+
+async function buscarImagemDoDrive(fileId) {
+    if (!fileId || !accessToken) return null;
+    if (driveImageCache[fileId]) return driveImageCache[fileId]; // Cache em memória
+    try {
+        let res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        if (!res.ok) return null;
+        let blob = await res.blob();
+        let url = URL.createObjectURL(blob);
+        driveImageCache[fileId] = url;
+        return url;
+    } catch(e) { return null; }
+}
+
+async function deletarImagemDoDrive(fileId) {
+    if (!accessToken || !fileId) return;
+    try {
+        await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        if (driveImageCache[fileId]) {
+            URL.revokeObjectURL(driveImageCache[fileId]);
+            delete driveImageCache[fileId];
+        }
+    } catch(e) { console.warn('Erro ao deletar imagem do Drive:', e); }
+}
+
+// -- Fim das funções auxiliares de Drive --
+let idAlbumAtual = null;
+let idFotoSendoEditada = null;
+
+function abrirModalNovoAlbum() {
+    document.getElementById('album-nome').value = '';
+    document.getElementById('album-desc').value = '';
+    document.getElementById('modal-album').style.display = 'flex';
+}
+
+function salvarNovoAlbum() {
+    let nome = document.getElementById('album-nome').value.trim();
+    let desc = document.getElementById('album-desc').value.trim() || 'Sem descrição';
+    if(!nome) return alert("Dê um nome ao álbum!");
+
+    db.galeria.albuns.push({ id: 'album_' + Date.now(), nome: nome, desc: desc });
+    salvarTudo(); // Usa a função nativa do seu index para salvar local/nuvem
+    document.getElementById('modal-album').style.display = 'none';
+    renderizarAbasGaleria();
+}
+
+function renderizarAbasGaleria() {
+    sincronizarBanco();
+    let grid = document.getElementById('grid-albuns');
+    if(!grid) return;
+    grid.innerHTML = '';
+
+    if(db.galeria.albuns.length === 0) {
+        grid.innerHTML = '<p style="color:#888; grid-column: 1/-1; text-align:center;">Nenhum álbum criado ainda. Comece criando um acima!</p>';
+        return;
+    }
+
+    db.galeria.albuns.forEach(album => {
+        let div = document.createElement('div');
+        div.className = 'panel';
+        div.style.cursor = 'pointer';
+        div.style.borderBottom = '4px solid var(--ts4-green)';
+        div.onclick = () => abrirAlbum(album.id);
+
+        let numFotos = db.galeria.fotos.filter(f => f.albumId === album.id).length;
+
+        // Renderiza o card sem capa primeiro (evita travar a interface)
+        div.innerHTML = `
+            <div id="capa-album-${album.id}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:12px; background:#eef3fa; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:30px;">📁</div>
+            <h3 style="margin:0; color:var(--ts4-blue)">📁 ${album.nome}</h3>
+            <p style="font-size:13px; color:#666; margin:8px 0 4px 0;">${album.desc}</p>
+            <span style="font-size:11px; color:#999; font-weight:700;">📸 ${numFotos} foto(s)</span>
+        `;
+        grid.appendChild(div);
+
+        // Carrega capa de forma assíncrona se existir
+        if (album.capa) {
+            let fotoCapaDados = db.galeria.fotos.find(f => f.id === album.capa);
+            let capaContainer = document.getElementById('capa-album-' + album.id);
+            if (fotoCapaDados && fotoCapaDados.driveFileId) {
+                // Capa no Drive
+                buscarImagemDoDrive(fotoCapaDados.driveFileId).then(src => {
+                    if (src && capaContainer) {
+                        capaContainer.outerHTML = `<img src="${src}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:12px; border:1px solid #eee;">`;
+                    }
+                });
+            } else {
+                // Fallback: capa salva em localStorage (fotos antigas)
+                let capaSrc = localStorage.getItem('ts4_galeria_midia_' + album.capa);
+                if (capaSrc && capaContainer) {
+                    capaContainer.outerHTML = `<img src="${capaSrc}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:12px; border:1px solid #eee;">`;
+                }
+            }
+        }
+    });
+}
+
+function abrirAlbum(id) {
+    idAlbumAtual = id;
+    let album = db.galeria.albuns.find(a => a.id === id);
+    document.getElementById('nome-album-ativo').innerText = "📁 " + album.nome;
+    document.getElementById('desc-album-ativo').innerText = album.desc;
+
+    document.getElementById('secao-albuns').style.display = 'none';
+    document.getElementById('secao-fotos').style.display = 'block';
+    document.getElementById('btn-voltar-albuns').style.display = 'inline-block';
+    
+    renderizarFotosDoAlbum();
+}
+
+function voltarParaAlbuns() {
+    idAlbumAtual = null;
+    document.getElementById('secao-albuns').style.display = 'block';
+    document.getElementById('secao-fotos').style.display = 'none';
+    document.getElementById('btn-voltar-albuns').style.display = 'none';
+    renderizarAbasGaleria();
+}
+
+// COMPRESSÃO ULTRA-LEVE DE IMAGEM (HTML5 Canvas)
+function comprimirImagemGaleria(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Resolução ideal para exibição web em grade
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Força o formato JPEG com qualidade de 60% (Fica leve e mantém excelente aspecto)
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.60);
+                resolve(dataUrl);
+            };
+        };
+    });
+}
+
+function abrirModalNovaFoto() {
+    idFotoSendoEditada = null;
+    document.getElementById('titulo-modal-foto').innerText = "📸 Nova Recordação Polaroid";
+    document.getElementById('container-input-arquivo').style.display = 'block';
+    document.getElementById('input-arquivo-foto').value = '';
+    document.getElementById('foto-titulo').value = '';
+    document.getElementById('foto-data').value = '';
+    document.getElementById('foto-comentario').value = '';
+    
+    // Preenche dinamicamente os checkboxes com os Sims cadastrados no seu sistema
+    let containerSims = document.getElementById('lista-sims-checkbox');
+    containerSims.innerHTML = db.sims.map(sim => `
+        <label style="display:block; font-size:13px; margin-bottom:4px; cursor:pointer;">
+            <input type="checkbox" class="chk-sim-foto" value="${sim.id}"> ${sim.nome}
+        </label>
+    `).join('') || '<span style="color:#888; font-size:12px;">Nenhum Sim cadastrado na árvore ainda.</span>';
+
+    document.getElementById('modal-foto').style.display = 'flex';
+}
+
+async function executarAcaoFotoPrincipal() {
+    let checkboxes = document.querySelectorAll('.chk-sim-foto:checked');
+    let simsMarcados = Array.from(checkboxes).map(cb => cb.value);
+    let titulo = document.getElementById('foto-titulo').value.trim() || 'Sem título';
+    let data = document.getElementById('foto-data').value.trim() || 'Fase Desconhecida';
+    let comentario = document.getElementById('foto-comentario').value.trim();
+
+    if (idFotoSendoEditada === null) {
+        // MODO: NOVA FOTO
+        const fileInput = document.getElementById('input-arquivo-foto');
+        if(!fileInput.files[0]) { alert("Por favor, selecione um arquivo de imagem!"); return; }
+
+        showToast("Comprimindo e enviando ao Google Drive...");
+
+        let fotoComprimidaBase64 = await comprimirImagemGaleria(fileInput.files[0]);
+        let idFotoUnica = 'foto_' + Date.now();
+
+        let driveFileId = null;
+        try {
+            driveFileId = await uploadImagemParaDrive(fotoComprimidaBase64, idFotoUnica + '.jpg');
+        } catch(e) {
+            console.error('Erro no upload Drive:', e);
+            alert("❌ Falha ao enviar imagem para o Google Drive. Verifique a conexão e tente novamente.");
+            return;
+        }
+
+        // Salva apenas os metadados textuais no banco principal (JSON leve)
+        db.galeria.fotos.push({
+            id: idFotoUnica,
+            albumId: idAlbumAtual,
+            titulo: titulo,
+            data: data,
+            sims: simsMarcados,
+            comentario: comentario,
+            driveFileId: driveFileId  // Referência à imagem no Drive
+        });
+    } else {
+        // MODO: EDITAR FOTO EXISTENTE (não troca a imagem, só os dados textuais)
+        let foto = db.galeria.fotos.find(f => f.id === idFotoSendoEditada);
+        if(foto) {
+            foto.titulo = titulo;
+            foto.data = data;
+            foto.sims = simsMarcados;
+            foto.comentario = comentario;
+        }
+    }
+
+    salvarTudo();
+    fecharModalFoto();
+    renderizarFotosDoAlbum();
+    showToast("📸 Recordação guardada com sucesso!");
+}
+
+function fecharModalFoto() {
+    document.getElementById('modal-foto').style.display = 'none';
+}
+
+function editarFoto(idFoto) {
+    idFotoSendoEditada = idFoto;
+    let foto = db.galeria.fotos.find(f => f.id === idFoto);
+    if(!foto) return;
+
+    document.getElementById('titulo-modal-foto').innerText = "✏️ Editar Recordação";
+    // Em modo edição, esconde o input de arquivo (a imagem não muda)
+    document.getElementById('container-input-arquivo').style.display = 'none';
+    document.getElementById('foto-titulo').value = foto.titulo;
+    document.getElementById('foto-data').value = foto.data;
+    document.getElementById('foto-comentario').value = foto.comentario || '';
+
+    // Preenche checkboxes marcando os Sims que já estavam na foto
+    let containerSims = document.getElementById('lista-sims-checkbox');
+    containerSims.innerHTML = db.sims.map(sim => `
+        <label style="display:block; font-size:13px; margin-bottom:4px; cursor:pointer;">
+            <input type="checkbox" class="chk-sim-foto" value="${sim.id}" ${foto.sims.includes(String(sim.id)) ? 'checked' : ''}> ${sim.nome}
+        </label>
+    `).join('') || '<span style="color:#888; font-size:12px;">Nenhum Sim cadastrado na árvore ainda.</span>';
+
+    document.getElementById('modal-foto').style.display = 'flex';
+}
+
+function definirCapaAlbum(idFoto) {
+    let album = db.galeria.albuns.find(a => a.id === idAlbumAtual);
+    if(!album) return;
+    album.capa = idFoto;
+    salvarTudo();
+    showToast("⭐ Foto definida como capa do álbum!");
+}
+
+async function renderizarFotosDoAlbum() {
+    let grid = document.getElementById('grid-fotos');
+    if(!grid) return;
+    grid.innerHTML = '<p style="color:#aaa; text-align:center; grid-column:1/-1; padding:20px;">⏳ Carregando recordações...</p>';
+
+    let fotosFiltradas = db.galeria.fotos.filter(f => f.albumId === idAlbumAtual);
+
+    if(fotosFiltradas.length === 0) {
+        grid.innerHTML = '<p style="color:#888; grid-column: 1/-1; text-align:center;">Este álbum está vazio. Adicione a primeira Polaroid acima!</p>';
+        return;
+    }
+
+    // Busca todas as imagens em paralelo (Drive ou localStorage legado)
+    const imagensSrcs = await Promise.all(fotosFiltradas.map(async foto => {
+        if (foto.driveFileId) {
+            // Novo fluxo: busca do Google Drive
+            return await buscarImagemDoDrive(foto.driveFileId)
+                || 'https://placehold.co/300x300?text=Imagem+não+encontrada';
+        } else {
+            // Fallback legado: busca do localStorage (fotos antigas)
+            return localStorage.getItem('ts4_galeria_midia_' + foto.id)
+                || 'https://placehold.co/300x300?text=Imagem+não+encontrada';
+        }
+    }));
+
+    grid.innerHTML = '';
+
+    fotosFiltradas.forEach((foto, index) => {
+        let imagemSrc = imagensSrcs[index];
+
+        // Descobre o nome dos Sims marcados
+        let nomesSims = foto.sims.map(id => {
+            let s = db.sims.find(x => String(x.id) === String(id));
+            return s ? s.nome : 'Sim Removido';
+        }).join(', ');
+
+        let div = document.createElement('div');
+        // Estilização estilo Polaroid charmosa
+        div.style = "background: white; padding: 15px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-bottom: 20px solid white; text-align: center; display: flex; flex-direction: column; gap: 8px;";
+        div.innerHTML = `
+            <img src="${imagemSrc}" style="width: 100%; height: 220px; object-fit: cover; border: 1px solid #eee;">
+            <div style="text-align: left; margin-top: 5px;">
+                <strong style="color: var(--ts4-blue); font-size:14px; display:block;">${foto.titulo}</strong>
+                <span style="font-size: 11px; background: #e6f2ff; color: var(--ts4-blue); padding: 2px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin-top:4px;">📅 ${foto.data}</span>
+                ${nomesSims ? `<p style="font-size:11px; margin: 5px 0 0 0; color: #555;">👥 <strong>Presentes:</strong> ${nomesSims}</p>` : ''}
+                ${foto.comentario ? `<p style="font-size:12px; margin: 8px 0 0 0; font-style: italic; color: #333; background: #fafafa; padding: 6px; border-radius:6px; border-left: 2px solid #ccc;">"${foto.comentario}"</p>` : ''}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; border-top:1px solid #eee; padding-top:8px;">
+                <button onclick="editarFoto('${foto.id}')" style="background:none; border:none; color:var(--ts4-blue); font-size:11px; cursor:pointer; font-weight:bold; padding:0;">✏️ Editar</button>
+                <button onclick="definirCapaAlbum('${foto.id}')" style="background:none; border:none; color:var(--ts4-green); font-size:11px; cursor:pointer; font-weight:bold; padding:0;" title="Usar esta foto como capa do álbum">⭐ Definir Capa</button>
+                <button onclick="deletarFotoPrincipal('${foto.id}')" style="background:none; border:none; color:#ff4d4d; font-size:11px; cursor:pointer; font-weight:bold; padding:0;">🗑️ Excluir</button>
+            </div>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+async function deletarFotoPrincipal(idFoto) {
+    if(!confirm("Tem certeza que deseja apagar esta recordação para sempre?")) return;
+    
+    let foto = db.galeria.fotos.find(f => f.id === idFoto);
+
+    if (foto && foto.driveFileId) {
+        // Novo fluxo: remove a imagem do Google Drive
+        showToast("Removendo do Drive...");
+        await deletarImagemDoDrive(foto.driveFileId);
+    } else {
+        // Fallback legado: remove do localStorage (fotos antigas)
+        localStorage.removeItem('ts4_galeria_midia_' + idFoto);
+    }
+    
+    // Remove o registro de texto do banco
+    db.galeria.fotos = db.galeria.fotos.filter(f => f.id !== idFoto);
+    
+    salvarTudo();
+    renderizarFotosDoAlbum();
+    showToast("Foto removida.");
+}
+
         window.onload = function() {
             iniciarDB();
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') fecharLightbox();
             });
 
+            // Verifica expiração da sessão do Drive a cada 2 minutos (só quando na galeria)
+            setInterval(() => {
+                if (document.getElementById('tab-galeria').classList.contains('active')) {
+                    verificarSessaoDrive();
+                }
+            }, 120000);
 };
 
     </script>
