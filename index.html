@@ -183,6 +183,7 @@
         <button class="nav-btn" onclick="switchTab('tab-help')">📖 Ajuda</button>
         <button class="nav-btn" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
         <button class="nav-btn" onclick="switchTab('tab-apoio')" style="color: var(--ts4-green);">💖 Apoie o Projeto</button>
+	<button class="nav-btn" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
 
         <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px;">
             <h3 style="font-size: 12px; color: var(--ts4-blue); text-transform: uppercase; margin-bottom: 10px;">☁️ Conexão Nuvem</h3>
@@ -729,17 +730,30 @@
                     <li><strong>O que faz:</strong> Exibe de forma cronológica todas as mudanças, mortes, casamentos e sorteios aceitos.</li>
                     <li><strong>Adição Manual:</strong> Aconteceu algo marcante no seu jogo que o sistema não sorteou? Digite na barra de texto, escolha uma Tag correspondente (👶 NASCIMENTO, 💍 CASAMENTO, 💀 MORTE, etc.) e clique em registrar.</li>
                     <li><strong>Organização:</strong> Filtre as histórias clicando nas tags para rever momentos específicos de gerações passadas.</li>
+		    <li><strong>Linha do Tempo:</strong> Exibe cronologicamente mortes, casamentos e metas concluídas. Você pode inserir eventos manualmente usando as Tags de categoria.</li>
+                    <li><strong>Controle de Metas:</strong> Adicione ou sorteie metas. O sistema as mantém como "Pendentes" até que você, após realizar no jogo, marque como "Concluída", gerando um registro automático no histórico.</li>
+                    <li><strong>Modo Apresentação:</strong> No topo da tela de livros, ative este modo para transformar sua história em um <strong>slide cinematográfico</strong> em tela cheia, perfeito para criar conteúdo ou relembrar o legado.</li>
+                </ul>
+            </div>
+
+	    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #27ae60;">
+                <h3 style="margin-top: 0; color: #27ae60;">📸 7. Galeria de Recordações</h3>
+                <p>O acervo visual da sua família.</p>
+                <ul>
+                    <li><strong>Salvamento no Drive:</strong> As imagens cadastradas por você são salvas em seu drive, portando só funciona com quem estiver conectado na nuvem.</li>
+                    <li><strong>Gerenciamento:</strong> A Galeria funciona como um mural de memórias. Você pode organizar, filtrar ou revisar os registros fotográficos de cada geração.</li>
+                    <li><strong>Performance:</strong> O sistema comprime as imagens automaticamente, garantindo que o acesso à sua galeria seja rápido, mesmo com muitos anos de legado acumulados.</li>
                 </ul>
             </div>
 
             <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #f1c40f;">
-                <h3 style="margin-top: 0; color: #d4a306;">📜 7. Livro de Regras (As Leis do Seu Desafio)</h3>
+                <h3 style="margin-top: 0; color: #d4a306;">📜 8. Livro de Regras (As Leis do Seu Desafio)</h3>
                 <p>O espaço sagrado para manter seu jogo desafiador e justo.</p>
                 <p><strong>Como usar:</strong> Escreva e salve as diretrizes rígidas do seu save atual. Exemplo: <em>"Só é permitido construir paredes novas se o Sim herdeiro atingir o nível 5 de Logística"</em>, ou <em>"Proibido comprar eletrônicos na primeira geração"</em>. Isso evita que você perca o foco das regras no meio do gameplay.</p>
             </div>
 
             <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #e74c3c;">
-                <h3 style="margin-top: 0; color: #e74c3c;">⚙️ 8. Configurações (A Central de Controle)</h3>
+                <h3 style="margin-top: 0; color: #e74c3c;">⚙️ 9. Configurações (A Central de Controle)</h3>
                 <p>Onde você ajusta o SimStoria para o seu estilo de jogo.</p>
                 <ul>
                     <li><strong>Controle de Base de Dados:</strong> Adicione novos traços, carreiras e aspirações personalizados (de Mods ou expansões novas). <small style="color: #666; display: block; margin-top: 4px;">Nota de segurança: Os itens originais de fábrica do sistema são protegidos e não podem ser apagados, garantindo que o núcleo do app nunca quebre.</small></li>
@@ -847,7 +861,51 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                 </p>
             </div>
         </div>
-        
+
+	 <div id="tab-sobre" class="tab-pane">
+            <div class="panel" style="max-width: 800px; margin: auto;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/67fd436abea8a2622d7333f25780b164c3510ade/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
+                    <h2 style="color: var(--ts4-blue); margin: 0;">SimStoria - Legacy Companion</h2>
+                    <p style="color: #666; font-size: 14px;">Versão Atual: v48 (Sims Edition)</p>
+                </div>
+
+                <div style="background: #f0f7ff; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue); margin-bottom: 30px;">
+                    <h3 style="margin-top: 0; color: var(--ts4-blue);">Sobre o Projeto</h3>
+                    <p style="font-size: 14px; line-height: 1.6; color: #444;">
+                        O SimStoria nasceu por querer organizar um save de legaado que eu tinha, mas que acabou quebrando algumas vezes por conta de mods ou bugs do jogo; Como foi ficando bem legal, quis abrir a ferramenta para outros simmers utilizarem, em razão da necessidade de organizar o caos e a beleza das histórias que criamos no The Sims 4.  
+                        Este projeto é construído com muito carinho por uma simmer, para a comunidade simmer.
+			Vai Brasil!
+                    </p>
+                </div>
+
+                <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🚀 Histórico de Atualizações</h3>
+                
+                <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--ts4-green); margin-bottom: 20px;">
+                    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--ts4-green);"></div>
+                    <strong style="font-size: 14px; color: #333;">v48 - Novas Conexões e Interface</strong>
+                    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 03 de Junho de 2026 às 14:00</span>
+                    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
+                        <li><strong>Árvore Genealógica:</strong> Adicionada a opção de vincular Irmãos Fundadores (Sims sem pais na árvore).</li>
+                        <li><strong>Interface:</strong> Nova aba "Sobre e Atualizações" implementada.</li>
+                        <li><strong>Correções:</strong> Ajustes de estabilidade na linha do tempo visual.</li>
+                    </ul>
+                </div>
+
+                <div style="position: relative; padding-left: 20px; border-left: 2px solid #ccc; margin-bottom: 20px;">
+                    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #ccc;"></div>
+                    <strong style="font-size: 14px; color: #333;">v47 - Galeria e Nuvem</strong>
+                    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 Maio de 2026</span>
+                    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
+                        <li>Integração da Galeria de Recordações com o Google Drive para fotos pesadas.</li>
+                        <li>Sistema de compressão de imagens via Canvas (evita travamento do navegador).</li>
+                        <li>Nova roleta de Histórias de Vizinhança integrada com a I.A.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+       
         <div id="tab-feedback" class="tab-pane">
             <div class="panel" style="max-width: 600px; margin: 40px auto;">
                 <h2 style="text-align: center;">💬 Fale com a Criadora</h2>
@@ -980,9 +1038,16 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
+		<div style="display: flex; gap: 10px; margin-top: 10px;">
                     <div style="flex:1;"><label>Progenitor(a) 1:</label><select id="e-p1"></select></div>
                     <div style="flex:1;"><label>Progenitor(a) 2:</label><select id="e-p2"></select></div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex:1; background: #fffdf2; padding: 10px; border-radius: 8px; border-left: 3px solid #FF8C00;">
+                        <label style="color:#FF8C00; font-weight:bold;">Irmão(ã) Fundador(a) (Sem pais):</label>
+                        <select id="e-irmao"></select>
+                        <p style="font-size:9px; color:#888; margin:2px 0 0 0;">Use apenas se eles não tiverem os mesmos pais cadastrados acima.</p>
+                    </div>
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -1635,6 +1700,21 @@ async function excluirAlbumAtual() {
         }
 
         function filtrarLivro(tag, btnElement) { filtroAtivoLivro = tag; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); if(btnElement) btnElement.classList.add('active'); renderLivroComFiltro(); }
+	function addSinopseAoLivro() {
+    if (!window.tempSinopse || window.tempSinopse.trim() === '') {
+        alert("Nenhuma narrativa foi gerada.");
+        return;
+    }
+
+    const dataStr = new Date().toLocaleDateString('pt-BR');
+
+    db.historia += `\n[${dataStr}] [DRAMA] ${window.tempSinopse}`;
+
+    salvarTudo();
+    renderLivroComFiltro();
+
+    showToast("✓ Narrativa registrada no Livro da Família!");
+}
         function addHistoriaManual() { const v = document.getElementById('nova-historia-manual').value; const tag = document.getElementById('sel-tag-historia').value; if(v) { let dataInput = document.getElementById('data-historia-manual').value; let dataStr = dataInput ? new Date(dataInput + 'T00:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'); db.historia += `\n[${dataStr}] ${tag} ${v}`; document.getElementById('nova-historia-manual').value = ""; salvarTudo(); renderLivroComFiltro(); showToast("Evento anotado!"); } }
         function addMeta() { const v = document.getElementById('nova-meta').value; if(v) { db.metas_pendentes.push(v); document.getElementById('nova-meta').value = ""; salvarTudo(); renderMetas(); } }
         function concluirMeta(i) { const m = db.metas_pendentes[i]; db.metas_pendentes.splice(i, 1); db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [CONQUISTA] Meta Concluída: ${m}`; salvarTudo(); renderMetas(); renderLivroComFiltro(); showToast("Meta registrada!"); }
@@ -1948,11 +2028,13 @@ async function excluirAlbumAtual() {
             } catch(e) { alert("Erro de API"); } finally { btn1.innerText = "GERAR ACONTECIMENTO"; btn1.disabled = false; }
         }
 
-        function exibirNarrativaCodex(cabecalho, corpo, tom) { 
-            document.getElementById("sinopse-texto").innerHTML = "<span class=\"narrative-tag\" style=\"background:var(--ts4-blue)\">" + cabecalho + " | TOM: " + tom.toUpperCase() + "</span><br><br>" + corpo.replace(/\n/g, "<br>"); 
-            document.getElementById("res-sinopse").style.display = "block"; 
-        }
+	function exibirNarrativaCodex(cabecalho, corpo, tom) { 
+   		 document.getElementById("sinopse-texto").innerHTML = "<span class=\"narrative-tag\" style=\"background:var(--ts4-blue)\">" + cabecalho + " | TOM: " + tom.toUpperCase() + "</span><br><br>" + corpo.replace(/\n/g, "<br>"); 
+    
+    document.getElementById("res-sinopse").style.display = "block";
 
+    window.tempSinopse = "[" + cabecalho + " | TOM: " + tom.toUpperCase() + "]\n" + corpo;
+}
         function gerarSinopseDinamica() { 
             if(db.sims.length === 0) return alert("Crie Sims na Árvore Genealógica primeiro!"); 
             let selSimId = document.getElementById("sel-sim-narrativa").value; 
@@ -2009,8 +2091,8 @@ async function excluirAlbumAtual() {
             carregarImagemNoInputDaFase();
             renderRelPassadasEdit();
             
-            const opt = '<option value="">Nenhum</option>' + db.sims.filter(x => String(x.id) !== String(currentSimId)).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-            ['e-p1','e-p2','e-spouse'].forEach(id => { 
+	    const opt = '<option value="">Nenhum</option>' + db.sims.filter(x => String(x.id) !== String(currentSimId)).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+            ['e-p1','e-p2','e-spouse','e-irmao'].forEach(id => {
                 const el = document.getElementById(id); 
                 if(el) { el.innerHTML = opt; el.value = s[id.replace('e-','')] || ""; }
             });
@@ -2087,7 +2169,7 @@ async function excluirAlbumAtual() {
             showToast("📸 Imagem ajustada com sucesso!");
         }
 
-        function salvarSim() {
+function salvarSim() {
             salvarImagemNaMemoriaDaFase(); 
             let faseNova = document.getElementById('e-fase').value;
             let nomeSim = document.getElementById('e-nome').value;
@@ -2110,6 +2192,7 @@ async function excluirAlbumAtual() {
                 p1: document.getElementById('e-p1').value, 
                 p2: document.getElementById('e-p2').value, 
                 spouse: document.getElementById('e-spouse').value, 
+                irmao: document.getElementById('e-irmao').value, // Carrega o irmão selecionado
                 relStatus: relStatusNovo, 
                 traicao: document.getElementById('e-traicao').checked, 
                 crush: document.getElementById('e-crush').value, 
@@ -2121,6 +2204,8 @@ async function excluirAlbumAtual() {
 
             if(currentSimId) {
                 let oldSim = db.sims.find(x => String(x.id) === String(currentSimId));
+                
+                // --- TRATAMENTO DO CÔNJUGE ANTERIOR ---
                 if(oldSim.spouse && String(oldSim.spouse) !== String(s.spouse)) {
                     let ex = db.sims.find(x => String(x.id) === String(oldSim.spouse));
                     let nomeEx = ex ? ex.nome : 'Sim removido';
@@ -2143,6 +2228,15 @@ async function excluirAlbumAtual() {
                         ex.spouse = "";
                     }
                 }
+
+                // --- NOVO: TRATAMENTO DO IRMÃO ANTERIOR (Limpa o vínculo antigo ao editar) ---
+                if(oldSim.irmao && String(oldSim.irmao) !== String(s.irmao)) {
+                    let exIrmao = db.sims.find(x => String(x.id) === String(oldSim.irmao));
+                    if(exIrmao && String(exIrmao.irmao) === String(oldSim.id)) {
+                        exIrmao.irmao = ""; // Limpa a referência no irmão antigo
+                    }
+                }
+
                 if(s.spouse) { 
                     let novoConj = db.sims.find(x => String(x.id) === String(s.spouse)); 
                     if(novoConj) { 
@@ -2150,17 +2244,33 @@ async function excluirAlbumAtual() {
                         novoConj.relStatus = s.relStatus; 
                     } 
                 }
-                const idx = db.sims.findIndex(x => String(x.id) === String(currentSimId)); db.sims[idx] = s;
+
+                // --- NOVO: VINCULAÇÃO DUPLA DE IRMÃOS NA EDIÇÃO ---
+                if(s.irmao) { 
+                    let novoIrmao = db.sims.find(x => String(x.id) === String(s.irmao)); 
+                    if(novoIrmao) { novoIrmao.irmao = s.id; } 
+                }
+
+                const idx = db.sims.findIndex(x => String(x.id) === String(currentSimId)); 
+                db.sims[idx] = s;
+
             } else {
+                // --- CASO SEJA UM SIM NOVO ---
                 if(s.spouse) { 
                     let novoConj = db.sims.find(x => String(x.id) === String(s.spouse)); 
                     if(novoConj) { 
                         novoConj.spouse = s.id; 
                         novoConj.relStatus = s.relStatus; 
                     } 
+                }
+              
+                if(s.irmao) { 
+                    let novoIrmao = db.sims.find(x => String(x.id) === String(s.irmao)); 
+                    if(novoIrmao) { novoIrmao.irmao = s.id; } 
                 }
                 db.sims.push(s);
             }
+
             salvarTudo(); fecharModal(); renderTree(); renderGenList(); renderIaSimList(); showToast("Perfil salvo!");
         }
 
@@ -2665,12 +2775,33 @@ async function excluirAlbumAtual() {
                 };
             });
 
-            let edgesArray = [];
+let edgesArray = [];
             let addedSpouses = new Set();
+
+            // MUDAMOS O NOME AQUI PARA EVITAR CONFLITO:
+            const addedFundadoresEdges = new Set();
             
             baseSims.forEach(s => {
                 if (s.p1 && baseSims.some(b => String(b.id) === String(s.p1))) edgesArray.push({ from: String(s.p1), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });
-                if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });
+                if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });                
+                
+                // NOVO: Linha para Irmãos Fundadores (com o novo nome de controle)
+                if (s.irmao && baseSims.some(b => String(b.id) === String(s.irmao))) {
+                    let irmaoKey1 = `${s.id}-${s.irmao}-sibling`;
+                    let irmaoKey2 = `${s.irmao}-${s.id}-sibling`;
+                    
+                    if (!addedFundadoresEdges.has(irmaoKey1) && !addedFundadoresEdges.has(irmaoKey2)) {
+                        edgesArray.push({
+                            from: String(s.id),       
+                            to: String(s.irmao),     
+                            color: { color: '#FF8C00' },
+                            dashes: false, // Linha sólida para irmãos
+                            width: 2,
+                            smooth: { type: 'curvedCW', roundness: 0.2 }  
+                        });
+                        addedFundadoresEdges.add(irmaoKey1);
+                    }
+                }
                 
                 if (s.spouse && baseSims.some(b => String(b.id) === String(s.spouse))) {
                     let spKey1 = `${s.id}-${s.spouse}`;
@@ -3912,7 +4043,7 @@ function exportarPerfilSim(simId) {
 
         <!-- Dica de teclado -->
         <div style="position:relative; z-index:1; text-align:center; padding:8px; font-size:10px; color:rgba(255,255,255,0.18); font-family:'Nunito',sans-serif; letter-spacing:1px;">← → NAVEGAR &nbsp;|&nbsp; ESC FECHAR &nbsp;|&nbsp; BARRA DE ESPAÇO PRÓXIMO</div>
-    </div>
+    </div>]
 
 </body>
 </html>
